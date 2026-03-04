@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Learning - Nhóm 9</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #6c757d;
+            --success: #28a745;
+            --danger: #dc3545;
+            --bg: #f4f7f6;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        h1 { color: #333; margin-bottom: 10px; text-align: center; }
+        .group-name { color: var(--primary); font-weight: bold; text-align: center; margin-bottom: 25px; }
+        
+        textarea {
+            width: 100%;
+            height: 180px;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+            resize: none;
+        }
+        textarea:focus { border-color: var(--primary); }
+
+        .settings {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .lang-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            background: var(--primary);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 15px;
+        }
+        .btn-play { background: var(--success); color: white; grid-column: span 2; }
+        .btn-switch { background: var(--primary); color: white; }
+        .btn-stop { background: var(--danger); color: white; }
+        
+        button:hover { opacity: 0.9; transform: translateY(-2px); }
+        button:active { transform: translateY(0); }
+
+        #status {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #888;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎙️ AI Text-to-Speech</h1>
+    <div class="group-name">DỰ ÁN NHÓM 9</div>
+
+    <textarea id="text-input" placeholder="Nhập nội dung bài học tại đây..."></textarea>
+
+    <div class="settings">
+        <span>Ngôn ngữ hiện tại:</span>
+        <span class="lang-badge" id="lang-label">Tiếng Việt (vi)</span>
+    </div>
+
+    <div class="controls">
+        <button class="btn-play" onclick="playAudio()">▶ PHÁT ÂM THANH</button>
+        <button class="btn-switch" onclick="toggleLanguage()">🔄 ĐỔI NGÔN NGỮ</button>
+        <button class="btn-stop" onclick="stopAudio()">⏹ DỪNG</button>
+    </div>
+
+    <div id="status">Trạng thái: Sẵn sàng</div>
+</div>
+
+<script>
+    let currentLang = 'vi'; // Mặc định là tiếng Việt
+    let audio = null;
+
+    function toggleLanguage() {
+        if (currentLang === 'vi') {
+            currentLang = 'en';
+            document.getElementById('lang-label').innerText = "Tiếng Anh (en)";
+            document.getElementById('lang-label').style.background = "#555";
+            document.getElementById('text-input').placeholder = "Enter lesson content here...";
+        } else {
+            currentLang = 'vi';
+            document.getElementById('lang-label').innerText = "Tiếng Việt (vi)";
+            document.getElementById('lang-label').style.background = "#4a90e2";
+            document.getElementById('text-input').placeholder = "Nhập nội dung bài học tại đây...";
+        }
+        document.getElementById('status').innerText = "Đã chuyển sang " + (currentLang === 'vi' ? "Tiếng Việt" : "Tiếng Anh");
+    }
+
+    function playAudio() {
+        const text = document.getElementById('text-input').value;
+        if (!text.trim()) {
+            alert("Vui lòng nhập văn bản!");
+            return;
+        }
+
+        if (audio) { audio.pause(); }
+
+        document.getElementById('status').innerText = "Đang tải giọng đọc AI...";
+
+        // Gọi API Google TTS (Client-side)
+        const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=${currentLang}&client=tw-ob`;
+        
+        audio = new Audio(url);
+        audio.play()
+            .then(() => {
+                document.getElementById('status').innerText = "Đang phát bài học (" + currentLang + ")...";
+            })
+            .catch(err => {
+                document.getElementById('status').innerText = "Lỗi phát âm thanh. Hãy thử lại.";
+                console.error(err);
+            });
+
+        audio.onended = () => {
+            document.getElementById('status').innerText = "Đã hoàn thành.";
+        };
+    }
+
+    function stopAudio() {
+        if (audio) {
+            audio.pause();
+            audio.currentTime = 0;
+            document.getElementById('status').innerText = "Đã dừng.";
+        }
+    }
+</script>
+
+</body>
+</html>
