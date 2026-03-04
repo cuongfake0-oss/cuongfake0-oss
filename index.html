@@ -12,7 +12,7 @@
             --bg: #f4f7f6;
         }
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg);
             display: flex;
             justify-content: center;
@@ -29,9 +29,7 @@
             max-width: 550px;
             text-align: center;
         }
-        h1 { color: #333; margin-bottom: 5px; }
-        .group-tag { color: var(--primary); font-weight: bold; margin-bottom: 25px; }
-        
+        .group-tag { color: var(--primary); font-weight: bold; margin-bottom: 20px; font-size: 1.2rem; }
         textarea {
             width: 100%;
             height: 180px;
@@ -45,7 +43,6 @@
             transition: 0.3s;
         }
         textarea:focus { border-color: var(--primary); }
-
         .lang-box {
             background: #f8f9fa;
             padding: 15px;
@@ -64,7 +61,6 @@
             font-size: 14px;
             font-weight: bold;
         }
-
         .controls {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -77,32 +73,28 @@
             font-weight: bold;
             cursor: pointer;
             transition: 0.2s;
-            font-size: 15px;
         }
-        .btn-play { background: var(--success); color: white; grid-column: span 2; }
+        .btn-play { background: var(--success); color: white; grid-column: span 2; font-size: 16px; }
         .btn-switch { background: var(--primary); color: white; }
         .btn-stop { background: var(--danger); color: white; }
         button:hover { opacity: 0.9; transform: scale(1.02); }
-
         #status { margin-top: 20px; font-size: 14px; color: #888; font-style: italic; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🎙️ AI Voice Reader</h1>
-    <div class="group-tag">DỰ ÁN NHÓM 9</div>
-
-    <textarea id="text-input" placeholder="Nhập nội dung bài học cần đọc..."></textarea>
+    <div class="group-tag">🎙️ NHÓM 9 - AI TEXT TO SPEECH</div>
+    <textarea id="text-input" placeholder="Nhập nội dung bài học tại đây..."></textarea>
 
     <div class="lang-box">
-        <span>Ngôn ngữ:</span>
-        <span class="lang-badge" id="lang-label">Tiếng Việt (VN)</span>
+        <span>Đang chọn:</span>
+        <span class="lang-badge" id="lang-label">Tiếng Việt (vi-VN)</span>
     </div>
 
     <div class="controls">
         <button class="btn-play" onclick="speak()">▶ PHÁT ÂM THANH</button>
-        <button class="btn-switch" onclick="toggleLanguage()">🔄 ĐỔI SANG TIẾNG ANH</button>
+        <button class="btn-switch" onclick="toggleLanguage()">🔄 ĐỔI NGÔN NGỮ</button>
         <button class="btn-stop" onclick="stop()">⏹ DỪNG</button>
     </div>
 
@@ -111,41 +103,38 @@
 
 <script>
     const synth = window.speechSynthesis;
-    let lang = 'vi-VN';
+    let currentLang = 'vi-VN';
 
     function toggleLanguage() {
-        if (lang === 'vi-VN') {
-            lang = 'en-US';
-            document.getElementById('lang-label').innerText = "Tiếng Anh (US)";
+        if (currentLang === 'vi-VN') {
+            currentLang = 'en-US';
+            document.getElementById('lang-label').innerText = "Tiếng Anh (en-US)";
             document.getElementById('lang-label').style.background = "#555";
-            document.querySelector('.btn-switch').innerText = "🔄 ĐỔI SANG TIẾNG VIỆT";
         } else {
-            lang = 'vi-VN';
-            document.getElementById('lang-label').innerText = "Tiếng Việt (VN)";
+            currentLang = 'vi-VN';
+            document.getElementById('lang-label').innerText = "Tiếng Việt (vi-VN)";
             document.getElementById('lang-label').style.background = "#4a90e2";
-            document.querySelector('.btn-switch').innerText = "🔄 ĐỔI SANG TIẾNG ANH";
         }
+        document.getElementById('status').innerText = "Đã đổi sang " + (currentLang === 'vi-VN' ? "Tiếng Việt" : "Tiếng Anh");
     }
 
     function speak() {
         const text = document.getElementById('text-input').value;
         if (!text.trim()) return alert("Vui lòng nhập văn bản!");
 
-        synth.cancel(); // Dừng các lượt nói đang chờ
+        synth.cancel(); // Dừng các lượt nói cũ
 
         const utter = new SpeechSynthesisUtterance(text);
-        
-        // Tìm voice phù hợp với ngôn ngữ đã chọn
+        utter.lang = currentLang;
+        utter.rate = 1.0;
+
+        // Tự động tìm giọng đọc phù hợp trong máy tính/điện thoại
         const voices = synth.getVoices();
-        const selectedVoice = voices.find(v => v.lang.startsWith(lang.split('-')[0]));
-        
-        if (selectedVoice) utter.voice = selectedVoice;
-        utter.lang = lang;
-        utter.rate = 1.0; 
-        utter.pitch = 1.0;
+        const voice = voices.find(v => v.lang.startsWith(currentLang.split('-')[0]));
+        if (voice) utter.voice = voice;
 
         utter.onstart = () => document.getElementById('status').innerText = "Trạng thái: Đang phát...";
-        utter.onend = () => document.getElementById('status').innerText = "Trạng thái: Hoàn thành.";
+        utter.onend = () => document.getElementById('status').innerText = "Trạng thái: Đã hoàn thành.";
 
         synth.speak(utter);
     }
@@ -155,7 +144,7 @@
         document.getElementById('status').innerText = "Trạng thái: Đã dừng.";
     }
 
-    // Load voices cho trình duyệt (cần thiết cho một số trình duyệt)
+    // Fix lỗi một số trình duyệt không tải giọng nói ngay lập tức
     window.speechSynthesis.onvoiceschanged = () => { synth.getVoices(); };
 </script>
 
